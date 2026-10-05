@@ -1,4 +1,4 @@
-package io.github.vvb2060.ims;
+package io.github.raspberrykan.fastssrsrp;
 
 import static rikka.shizuku.ShizukuProvider.METHOD_GET_BINDER;
 
@@ -25,7 +25,7 @@ import android.util.Log;
 import rikka.shizuku.ShizukuBinderWrapper;
 
 public class PrivilegedProcess extends Instrumentation {
-    static final String TAG = "vvb";
+    static final String TAG = "raspberrykan";
 
     @Override
     public void onCreate(Bundle arguments) {
@@ -87,7 +87,7 @@ public class PrivilegedProcess extends Instrumentation {
         var sm = context.getSystemService(SubscriptionManager.class);
         var values = getConfig();
         for (var subId : sm.getActiveSubscriptionIdList()) {
-            values.putInt("vvb2060_config_version", BuildConfig.VERSION_CODE);
+            values.putInt("raspberrykan_config_version", BuildConfig.VERSION_CODE);
             try {
                 cm.overrideConfig(subId, values, persistent);
             } catch (SecurityException e) {
@@ -97,8 +97,8 @@ public class PrivilegedProcess extends Instrumentation {
                     cm.overrideConfig(subId, values, persistent);
                 }
             }
-            var bundle = cm.getConfigForSubId(subId, "vvb2060_config_version");
-            if (bundle.getInt("vvb2060_config_version", 0) == BuildConfig.VERSION_CODE) {
+            var bundle = cm.getConfigForSubId(subId, "raspberrykan_config_version");
+            if (bundle.getInt("raspberrykan_config_version", 0) == BuildConfig.VERSION_CODE) {
                 Log.i(TAG, "overrideConfig succeeded for subId " + subId + ", persistent=" + persistent);
             } else {
                 Log.e(TAG, "overrideConfig failed for subId " + subId + ", persistent=" + persistent);
@@ -108,39 +108,13 @@ public class PrivilegedProcess extends Instrumentation {
 
     private static PersistableBundle getConfig() {
         var bundle = new PersistableBundle();
-        bundle.putBoolean(CarrierConfigManager.KEY_SHOW_IMS_REGISTRATION_STATUS_BOOL, true);
-        //bundle.putString(CarrierConfigManager.KEY_SIM_COUNTRY_ISO_OVERRIDE_STRING, "jp");
-
-        bundle.putBoolean(CarrierConfigManager.KEY_CARRIER_VOLTE_AVAILABLE_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_CARRIER_SUPPORTS_SS_OVER_UT_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_CARRIER_VT_AVAILABLE_BOOL, true);
-
-        bundle.putBoolean(CarrierConfigManager.KEY_CARRIER_CROSS_SIM_IMS_AVAILABLE_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_ENABLE_CROSS_SIM_CALLING_ON_OPPORTUNISTIC_DATA_BOOL, true);
-
-        bundle.putBoolean(CarrierConfigManager.KEY_CARRIER_WFC_IMS_AVAILABLE_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_CARRIER_WFC_SUPPORTS_WIFI_ONLY_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_EDITABLE_WFC_MODE_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_EDITABLE_WFC_ROAMING_MODE_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_SHOW_WIFI_CALLING_ICON_IN_STATUS_BAR_BOOL, true);
-        bundle.putInt(CarrierConfigManager.KEY_WFC_SPN_FORMAT_IDX_INT, 6);
-
-        bundle.putBoolean(CarrierConfigManager.KEY_EDITABLE_ENHANCED_4G_LTE_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_HIDE_ENHANCED_4G_LTE_BOOL, false);
-        bundle.putBoolean(CarrierConfigManager.KEY_HIDE_LTE_PLUS_DATA_ICON_BOOL, false);
-
-        bundle.putBoolean(CarrierConfigManager.KEY_VONR_ENABLED_BOOL, true);
-        bundle.putBoolean(CarrierConfigManager.KEY_VONR_SETTING_VISIBILITY_BOOL, true);
-        bundle.putIntArray(CarrierConfigManager.KEY_CARRIER_NR_AVAILABILITIES_INT_ARRAY,
-                new int[]{CarrierConfigManager.CARRIER_NR_AVAILABILITY_NSA,
-                        CarrierConfigManager.CARRIER_NR_AVAILABILITY_SA});
         bundle.putIntArray(CarrierConfigManager.KEY_5G_NR_SSRSRP_THRESHOLDS_INT_ARRAY,
                 // Boundaries: [-140 dBm, -44 dBm]
                 new int[]{
                         -128, /* SIGNAL_STRENGTH_POOR */
-                        -118, /* SIGNAL_STRENGTH_MODERATE */
-                        -108, /* SIGNAL_STRENGTH_GOOD */
-                        -98,  /* SIGNAL_STRENGTH_GREAT */
+                        -115, /* SIGNAL_STRENGTH_MODERATE */
+                        -105, /* SIGNAL_STRENGTH_GOOD */
+                        -95,  /* SIGNAL_STRENGTH_GREAT */
                 });
         return bundle;
     }

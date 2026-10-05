@@ -4,10 +4,10 @@ plugins {
 
 android {
     enableKotlin = false
-    namespace = "io.github.vvb2060.ims"
+    namespace = "io.github.raspberrykan.fastssrsrp"
     defaultConfig {
-        versionCode = 6
-        versionName = "3.1"
+        versionCode = 1
+        versionName = "1.0"
     }
     buildTypes {
         release {

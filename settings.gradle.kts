@@ -11,7 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        val agp = "9.2.0"
+        val agp = "9.4.1"
         id("com.android.application") version agp
         id("com.android.library") version agp
         id("com.android.settings") version agp
@@ -52,5 +52,5 @@ android {
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
-rootProject.name = "Ims"
+rootProject.name = "FastSSRSRP"
 include(":app")
