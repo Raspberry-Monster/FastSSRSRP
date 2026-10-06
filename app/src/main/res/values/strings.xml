@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FastSSRSRP</string>
+    <string name="page_title">Signal settings</string>
+    <string name="page_description">Adjust how your phone displays 5G signal strength.</string>
+    <string name="access_title">Shizuku access</string>
+    <string name="connection_label">Connection</string>
+    <string name="authorization_label">Authorization</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="granted">Granted</string>
+    <string name="not_granted">Not granted</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="start_shizuku">Start Shizuku or Sui to connect.</string>
+    <string name="authorize_hint">Allow access to enable the settings button.</string>
+    <string name="ready_hint">Access granted. Settings are applied only when you choose.</string>
+    <string name="authorize">Authorize Shizuku</string>
+    <string name="authorized">Authorized</string>
+    <string name="permission_denied">Access was denied. Allow FastSSRSRP in Shizuku or Sui, then return here.</string>
+    <string name="permission_error">Unable to request access. Check Shizuku or Sui and try again.</string>
+    <string name="settings_title">5G signal</string>
+    <string name="settings_description">Apply the signal settings included in this app.</string>
+    <string name="apply_settings">Apply settings</string>
+    <string name="applying">Requesting settings…</string>
+    <string name="apply_requested">Settings requested. This does not yet confirm that they were applied.</string>
+    <string name="apply_failed">Unable to request settings. Check Shizuku or Sui and try again.</string>
+    <string name="primary_user_only">Open this app from the primary user to apply settings.</string>
+    <string name="signal_note">This changes signal strength reporting. It does not boost reception.</string>
+</resources>

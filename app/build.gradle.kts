@@ -1,3 +1,7 @@
+import org.gradle.api.tasks.compile.JavaCompile
+
+val hiddenApiJar = files("libs/android.jar")
+
 plugins {
     id("com.android.application")
 }
@@ -24,6 +28,7 @@ android {
     }
     buildFeatures {
         buildConfig = true
+        viewBinding = true
     }
     packaging {
         resources {
@@ -39,7 +44,21 @@ android {
 }
 
 dependencies {
+    implementation(libs.material)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.livedata)
     implementation(libs.shizuku.provider)
     implementation(libs.shizuku.api)
     implementation(libs.hiddenapibypass)
+    compileOnly(hiddenApiJar)
+}
+
+afterEvaluate {
+    tasks.withType<JavaCompile>().configureEach {
+        if (!name.contains("UnitTest") &&
+            !name.contains("AndroidTest")) {
+            classpath = hiddenApiJar + classpath
+        }
+    }
 }

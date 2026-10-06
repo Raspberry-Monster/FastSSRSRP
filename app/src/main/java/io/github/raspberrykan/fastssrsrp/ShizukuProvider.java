@@ -13,8 +13,6 @@ import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.os.Process;
@@ -40,107 +38,31 @@ public class ShizukuProvider extends rikka.shizuku.ShizukuProvider {
         if (UserHandle.myUserId() != UserHandle.USER_SYSTEM) {
             return new Bundle();
         }
-
-        int sdkUid = Process.toSdkSandboxUid(Os.getuid());
-        int callingUid = Binder.getCallingUid();
-
-        if (callingUid != sdkUid
-                && callingUid != Process.SHELL_UID
+        var sdkUid = Process.toSdkSandboxUid(Os.getuid());
+        var callingUid = Binder.getCallingUid();
+        if (callingUid != sdkUid && callingUid != Process.SHELL_UID
                 && callingUid != Process.ROOT_UID) {
             return new Bundle();
         }
 
-        if ("activate".equals(method)) {
-            if (callingUid != Process.SHELL_UID && callingUid != Process.ROOT_UID) {
-                throw new SecurityException("Activation requires shell or root");
-            }
-            requestActivation(getContext());
-            var result = new Bundle();
-            result.putString("status", "Activation requested; check logcat for the result");
-            return result;
-        }
-
-        if (METHOD_GET_BINDER.equals(method)
-                && callingUid == sdkUid
-                && extras != null) {
-            IBinder binder = extras.getBinder("binder");
-
+        if (METHOD_GET_BINDER.equals(method) && callingUid == sdkUid && extras != null) {
+            var binder = extras.getBinder("binder");
             if (binder != null) {
-                Shizuku.addBinderReceivedListenerSticky(
-                    new Shizuku.OnBinderReceivedListener() {
-                        @Override
-                        public void onBinderReceived() {
-                            Shizuku.removeBinderReceivedListener(this);
-                            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                                startShellPermissionDelegate(binder, sdkUid);
-                                }
-                            }
-                    });
+                Shizuku.addBinderReceivedListenerSticky(new Shizuku.OnBinderReceivedListener() {
+                    @Override
+                    public void onBinderReceived() {
+                        Shizuku.removeBinderReceivedListener(this);
+                        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                            startShellPermissionDelegate(binder, sdkUid);
+                        }
+                    }
+                });
             }
-
             return new Bundle();
         }
-
         return super.call(method, arg, extras);
     }
-
-    private static void requestActivation(Context context) {
-        var handler = new Handler(Looper.getMainLooper());
-        handler.post(() -> {
-            Log.i(TAG, "Activation requested; waiting for Shizuku binder");
-            var listener = new Shizuku.OnBinderReceivedListener() {
-                private boolean finished;
-                private final Runnable timeout = () -> {
-                    if (finished) return;
-                    cleanup();
-                    Log.w(TAG, "Activation timed out; start Shizuku/Sui and retry");
-                };
-
-                private void cleanup() {
-                    finished = true;
-                    handler.removeCallbacks(timeout);
-                    Shizuku.removeBinderReceivedListener(this);
-                }
-
-                @Override
-                public void onBinderReceived() {
-                    handler.post(() -> {
-                        if (finished) return;
-                        cleanup();
-                        applyIfNeeded(context);
-                    });
-                }
-
-                private void start() {
-                    handler.postDelayed(timeout, 5000);
-                    Shizuku.addBinderReceivedListenerSticky(this);
-                }
-            };
-            listener.start();
-        });
-    }
-
-    public static void applyIfNeeded(Context context) {
-        if (UserHandle.myUserId() != UserHandle.USER_SYSTEM) {
-            return;
-        }
-        try {
-            if (!Shizuku.pingBinder()) {
-                Log.i(TAG, "Shizuku binder not ready; skip this broadcast");
-                return;
-            }
-            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "Shizuku permission not granted; authorize FastSSRSRP and retry");
-                return;
-            }
-            if (needOverride(context)) {
-                startInstrument(context, canPersistent(context));
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to apply carrier config", e);
-        }
-    }
-        private static void startShellPermissionDelegate(IBinder binder, int sdkUid) {
+    public static void startShellPermissionDelegate(IBinder binder, int sdkUid) {
         try {
             var activity = ServiceManager.getService(Context.ACTIVITY_SERVICE);
             var am = IActivityManager.Stub.asInterface(new ShizukuBinderWrapper(activity));
@@ -154,7 +76,7 @@ public class ShizukuProvider extends rikka.shizuku.ShizukuProvider {
         }
     }
 
-    private static void startInstrument(Context context, boolean sdkSandbox) {
+    public static boolean startInstrument(Context context, boolean sdkSandbox) {
         try {
             var binder = ServiceManager.getService(Context.ACTIVITY_SERVICE);
             var am = IActivityManager.Stub.asInterface(new ShizukuBinderWrapper(binder));
@@ -168,13 +90,14 @@ public class ShizukuProvider extends rikka.shizuku.ShizukuProvider {
             var args = new Bundle();
             args.putInt("pid", Process.myPid());
             var connection = new UiAutomationConnection();
-            am.startInstrumentation(name, null, flags, args, null, connection, 0, null);
+            return am.startInstrumentation(name, null, flags, args, null, connection, 0, null);
         } catch (Exception e) {
             Log.e(TAG, Log.getStackTraceString(e));
+            return false;
         }
     }
 
-    private static boolean needOverride(Context context) {
+    public static boolean needOverride(Context context) {
         var cm = context.getSystemService(CarrierConfigManager.class);
         var sm = context.getSystemService(SubscriptionManager.class);
         try {
@@ -197,7 +120,7 @@ public class ShizukuProvider extends rikka.shizuku.ShizukuProvider {
     }
 
     @SuppressLint("PrivateApi")
-    private static boolean canPersistent(Context context) {
+    public static boolean canPersistent(Context context) {
         try {
             var phone = context.createPackageContext("com.android.phone",
                     Context.CONTEXT_INCLUDE_CODE | Context.CONTEXT_IGNORE_SECURITY);

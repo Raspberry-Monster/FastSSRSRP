@@ -2,37 +2,29 @@
 
 FastSSRSRP adjusts Android's 5G NR SS-RSRP signal strength thresholds to better reflect real-world 5G signal characteristics. It changes how measured signal strength is mapped to signal levels; it does not boost reception.
 
-The app has no launcher icon or activity.
+The app includes a Material 3 screen with separate buttons for Shizuku authorization and applying signal settings. Signal thresholds are defined in the code, not edited in the UI.
 
 ## Requirements
 
 - Android 14 or later.
 - Shizuku or Sui running, with FastSSRSRP authorized.
-- ADB for initial activation after installation.
 
 ## Installation
 
 1. Install the APK.
-2. Connect the device to a computer with ADB and enable USB debugging.
-3. Ensure Shizuku or Sui is running and FastSSRSRP is authorized.
-4. Run the following commands to clear the app's stopped state and request a configuration check:
+2. Start Shizuku or Sui.
+3. Open FastSSRSRP from the launcher and tap **Authorize Shizuku**.
+4. Once access is granted, tap **Apply settings**.
 
-   ```sh
-   adb shell cmd package unstop --user 0 io.github.raspberrykan.fastssrsrp
-   adb shell content call --user 0 --uri content://io.github.raspberrykan.fastssrsrp.shizuku --method activate
-   ```
+Opening the app handles initial activation; no ADB activation command is required. Connecting or granting authorization alone does not apply settings. Use the device's primary user.
 
-5. Check the result in Logcat:
+The UI confirms that a settings request was started, not that the carrier configuration was successfully updated. To inspect the result with ADB:
 
-   ```sh
-   adb logcat -d -s raspberrykan:I
-   ```
+```sh
+adb logcat -d -s raspberrykan:I
+```
 
-The `activate` method requires an APK built with this activation entry point. It waits up to five seconds for Shizuku/Sui before checking the configuration. If authorization is missing, grant it and run the activation command again.
-
-The command response only confirms that activation was requested. Look for `overrideConfig succeeded` or `no need to override carrier config` in the logs. The `unstop` command alone does not trigger a configuration check. Later carrier configuration change broadcasts also trigger checks automatically.
-
-Repeat the activation steps after reinstalling or force-stopping the app. These commands target the device's primary user.
+Look for `overrideConfig succeeded` in the logs. After the first accepted settings request, carrier configuration change broadcasts can check and reapply the configuration. If the app is force-stopped, open it again from the launcher.
 
 ## Acknowledgments
 

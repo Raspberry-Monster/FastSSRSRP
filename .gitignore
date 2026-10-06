@@ -5,6 +5,7 @@ build/
 .externalNativeBuild/
 .cxx/
 /captures/
+/app/libs/
 /app/release/
 *.apk
 *.aab

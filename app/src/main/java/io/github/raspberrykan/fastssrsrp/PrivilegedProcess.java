@@ -109,12 +109,18 @@ public class PrivilegedProcess extends Instrumentation {
     private static PersistableBundle getConfig() {
         var bundle = new PersistableBundle();
         bundle.putIntArray(CarrierConfigManager.KEY_5G_NR_SSRSRP_THRESHOLDS_INT_ARRAY,
-                // Boundaries: [-140 dBm, -44 dBm]
                 new int[]{
-                        -128, /* SIGNAL_STRENGTH_POOR */
-                        -115, /* SIGNAL_STRENGTH_MODERATE */
-                        -105, /* SIGNAL_STRENGTH_GOOD */
-                        -95,  /* SIGNAL_STRENGTH_GREAT */
+                        -126,
+                        -121,
+                        -114,
+                        -105,
+                });
+        bundle.putIntArray(CarrierConfigManager.KEY_5G_NR_SSSINR_THRESHOLDS_INT_ARRAY,
+                new int[]{
+                        -5,
+                        5,
+                        15,
+                        30,
                 });
         return bundle;
     }
