@@ -33,6 +33,8 @@ public class ShizukuProvider extends rikka.shizuku.ShizukuProvider {
         LSPass.setHiddenApiExemptions("");
     }
 
+    private boolean skip = false;
+
     @Override
     public Bundle call(@NonNull String method, String arg, Bundle extras) {
         if (UserHandle.myUserId() != UserHandle.USER_SYSTEM) {
@@ -44,20 +46,23 @@ public class ShizukuProvider extends rikka.shizuku.ShizukuProvider {
                 && callingUid != Process.ROOT_UID) {
             return new Bundle();
         }
-
-        if (METHOD_GET_BINDER.equals(method) && callingUid == sdkUid && extras != null) {
-            var binder = extras.getBinder("binder");
-            if (binder != null) {
-                Shizuku.addBinderReceivedListenerSticky(new Shizuku.OnBinderReceivedListener() {
-                    @Override
-                    public void onBinderReceived() {
-                        Shizuku.removeBinderReceivedListener(this);
-                        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                            startShellPermissionDelegate(binder, sdkUid);
-                        }
-                    }
-                });
-            }
+        if (METHOD_SEND_BINDER.equals(method)) {
+            Shizuku.addBinderReceivedListener(() -> {
+                if (!skip && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                    var context = getContext();
+                    assert context != null;
+                    if (needOverride(context)) startInstrument(context, canPersistent(context));
+                }
+            });
+        }
+        else if (METHOD_GET_BINDER.equals(method) && callingUid == sdkUid && extras != null) {
+            skip = true;
+            Shizuku.addBinderReceivedListener(() -> {
+                var binder = extras.getBinder("binder");
+                if (binder != null && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                    startShellPermissionDelegate(binder, sdkUid);
+                }
+            });
             return new Bundle();
         }
         return super.call(method, arg, extras);
